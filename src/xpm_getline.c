@@ -13,9 +13,10 @@ ssize_t xpm_getline(char **line, size_t *line_size, FILE *file)
 
 	if (!*line || *line_size < sizeof(chunk))
 	{
-		*line = reallocf(*line, sizeof(chunk));
-		if (!*line)
+		char tmp = realloc(*line, sizeof(chunk));
+		if (!tmp)
 			return (-1);
+		*line = tmp;
 		*line_size = sizeof(chunk);
 	}
 	*line[0] = '\0';
@@ -24,9 +25,10 @@ ssize_t xpm_getline(char **line, size_t *line_size, FILE *file)
 	{
 		if (*line_size - strlen(*line) < sizeof(chunk))
 		{
-			*line = reallocf(*line, *line_size * 2);
-			if (!*line)
-				return (*line_size = 0, -1);
+			char *tmp = realloc(*line, *line_size * 2);
+			if (!tmp)
+				return (-1);
+			*line = tmp;
 			*line_size *= 2;
 		}
 		strcat(*line, chunk);
