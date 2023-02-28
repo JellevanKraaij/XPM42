@@ -13,7 +13,7 @@ ssize_t xpm_getline(char **line, size_t *line_size, FILE *file)
 
 	if (!*line || *line_size < sizeof(chunk))
 	{
-		char tmp = realloc(*line, sizeof(chunk));
+		char *tmp = realloc(*line, sizeof(chunk));
 		if (!tmp)
 			return (-1);
 		*line = tmp;
