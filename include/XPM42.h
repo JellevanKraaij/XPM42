@@ -10,8 +10,10 @@ extern "C" {
 typedef enum {
 	XPM_SUCCESS = 0,
 	XPM_INV_ARG,
-	XPM_INV_FILE,
 	XPM_INV_FILE_TYPE,
+	XPM_OPEN_ERROR,
+	XPM_READ_ERROR,
+	XPM_MEM_ERROR,
 	XPM_INV_FILE_FORMAT,
 } xpm_error_t;
 

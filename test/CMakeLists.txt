@@ -1,5 +1,9 @@
 set(TEST_EXECUTABLE_NAME unit_tests)
 
+if (NOT LINUX)
+	message(WARNING "Unit tests are only supported on Linux")
+endif()
+
 # Download GoogleTest
 # --------------------------------------------------
 include(FetchContent)
@@ -18,6 +22,9 @@ add_executable(
 	tests.cpp
 )
 
+target_compile_options(${TEST_EXECUTABLE_NAME} PRIVATE -fsanitize=address)
+target_link_options(${TEST_EXECUTABLE_NAME} PRIVATE -fsanitize=address)
+
 # Set C++ standard for test executable, googletest requires C++14
 # --------------------------------------------------
 set_property(TARGET ${TEST_EXECUTABLE_NAME} PROPERTY CXX_STANDARD 14)
@@ -32,7 +39,7 @@ target_link_libraries(
 
 # Add tests to CTest
 # --------------------------------------------------
-gtest_discover_tests(${TEST_EXECUTABLE_NAME})
+gtest_discover_tests(${TEST_EXECUTABLE_NAME} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Enable testing
 # --------------------------------------------------
