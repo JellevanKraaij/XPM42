@@ -3,17 +3,11 @@
 #include <gtest/gtest.h>
 
 TEST(XPM42, invalidParams) {
-	uint32_t	*data;
-	uint32_t	width;
-	uint32_t	height;
 
 	xpm_error_t res = xpm_decode32(NULL, NULL, NULL, NULL);
 	EXPECT_EQ(res, XPM_INV_ARG);
 
 	res = xpm_decode32(NULL, NULL, NULL, "test.xpm");
-	EXPECT_EQ(res, XPM_INV_ARG);
-
-	res = xpm_decode32(&data, &width, &height, "");
 	EXPECT_EQ(res, XPM_INV_ARG);
 }
 
@@ -23,6 +17,9 @@ TEST(XPM42, invalidFile) {
 	uint32_t	height;
 	xpm_error_t res;
 
+	data = NULL;
+	res = xpm_decode32(&data, &width, &height, "");
+	EXPECT_EQ(res, XPM_INV_FILE_TYPE);
 
 	data = NULL;
 	res = xpm_decode32(&data, &width, &height, "test.xpm4");
@@ -46,11 +43,10 @@ TEST(XPM42, invalidFile) {
 }
 
 static const char getline_testfile[] =
-"CJNh7W73d55&%Du\n"
-"a#x@yNCUZ6ZRfAw\n"
-"\n"
-"a2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$ca2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$c"
-;
+	"CJNh7W73d55&%Du\n"
+	"a#x@yNCUZ6ZRfAw\n"
+	"\n"
+	"a2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$ca2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$c";
 
 TEST(XPM42_int, getline)
 {
@@ -98,12 +94,11 @@ TEST(XPM42_int, getline)
 }
 
 static const char parse_header_testfile[] =
-"!XPM42\n"
-"16 16 3 1 c\n"
-"a #00000000\n"
-"b #FFFFFFFF\n"
-"c #FF00FF00\n"
-;
+	"!XPM42\n"
+	"16 16 3 1 c\n"
+	"a #00000000\n"
+	"b #FFFFFFFF\n"
+	"c #FF00FF00\n";
 
 TEST(XPM42_int, parse_header)
 {

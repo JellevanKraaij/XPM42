@@ -1,9 +1,5 @@
 set(TEST_EXECUTABLE_NAME unit_tests)
 
-if (NOT LINUX)
-	message(WARNING "Unit tests are only supported on Linux")
-endif()
-
 # Download GoogleTest
 # --------------------------------------------------
 include(FetchContent)
