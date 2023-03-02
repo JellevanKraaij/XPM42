@@ -52,7 +52,6 @@ static const char getline_testfile[] =
 "a2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$ca2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$c"
 ;
 
-
 TEST(XPM42_int, getline)
 {
 	ssize_t		len;
@@ -98,27 +97,38 @@ TEST(XPM42_int, getline)
 	fclose(fp);
 }
 
-//TODO: build a test for xpm_parse_header
+static const char parse_header_testfile[] =
+"!XPM42\n"
+"16 16 3 1 c\n"
+"a #00000000\n"
+"b #FFFFFFFF\n"
+"c #FF00FF00\n"
+;
 
-// TEST(XPM42_int, parse_header)
-// {
-// 	xpm_header_t	header;
-// 	xpm_error_t	res;
+TEST(XPM42_int, parse_header)
+{
+	xpm_header_t	header;
+	xpm_error_t		res;
 
-// 	res = xpm_parse_header(NULL, NULL);
-// 	EXPECT_EQ(res, XPM_INV_ARG);
+	FILE *fp = fmemopen((void *)parse_header_testfile, strlen(parse_header_testfile), "r");
+	ASSERT_NE(fp, nullptr);
 
-// 	res = xpm_parse_header(&header, NULL);
-// 	EXPECT_EQ(res, XPM_INV_ARG);
+	res = xpm_parse_header(&header, fp);
+	ASSERT_EQ(res, XPM_SUCCESS);
 
-// 	FILE *fp = fmemopen(NULL, 512, "w+");
+	EXPECT_EQ(header.width, 16);
+	EXPECT_EQ(header.height, 16);
+	EXPECT_EQ(header.color_mode, XPM_MODE_NORMAL);
+	
+	ASSERT_EQ(header.chars_per_pixel, 1);
+	ASSERT_EQ(header.color_cnt, 3);
 
-// 	ASSERT_NE(fp, nullptr);
+	EXPECT_STREQ(header.color_names[0], "a");
+	EXPECT_EQ(header.color_values[0], 0x00000000);
 
-// 	fputs("/* XPM */\n", fp);
-// 	fputs("static char * test_xpm[] = {\n", fp);
-// 	fputs("\"16 16 3 1\",\n", fp);
-// 	fputs("\"a c #000000\",\n", fp);
-// 	fputs("\"b c #FFFFFF\",\n", fp);
-// 	fputs("\"c c #FF0000\",\n", fp);
-// }
+	EXPECT_STREQ(header.color_names[1], "b");
+	EXPECT_EQ(header.color_values[1], 0xFFFFFFFF);
+
+	EXPECT_STREQ(header.color_names[2], "c");
+	EXPECT_EQ(header.color_values[2], 0xFF00FF00);
+}

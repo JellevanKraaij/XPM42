@@ -10,14 +10,20 @@ extern "C" {
 #include <stddef.h>
 #include <stdio.h>
 
-typedef struct {
-	unsigned int width;
-	unsigned int height;
-	unsigned int color_cnt;
-	unsigned int  chars_per_pixel;
+typedef enum {
+	XPM_MODE_NORMAL,
+	XPM_MODE_MONOCHROME,
+} xpm_color_mode_t;
 
-	char **color_names;
-	uint32_t *color_values;
+typedef struct {
+	unsigned int	width;
+	unsigned int	height;
+	unsigned int	color_cnt;
+	unsigned int	chars_per_pixel;
+	xpm_color_mode_t color_mode;
+
+	char			**color_names;
+	uint32_t		*color_values;
 
 } xpm_header_t;
 
