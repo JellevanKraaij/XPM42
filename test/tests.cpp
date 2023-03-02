@@ -131,4 +131,10 @@ TEST(XPM42_int, parse_header)
 
 	EXPECT_STREQ(header.color_names[2], "c");
 	EXPECT_EQ(header.color_values[2], 0xFF00FF00);
+
+	for (int i = 0; i < header.color_cnt; i++) {
+		free(header.color_names[i]);
+	}
+	free(header.color_names);
+	free(header.color_values);
 }
