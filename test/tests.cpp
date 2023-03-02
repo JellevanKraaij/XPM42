@@ -4,10 +4,10 @@
 
 TEST(XPM42, invalidParams) {
 
-	xpm_error_t res = xpm_decode32(NULL, NULL, NULL, NULL);
+	xpm_error_t res = xpm_decode(NULL, NULL, NULL, NULL);
 	EXPECT_EQ(res, XPM_INV_ARG);
 
-	res = xpm_decode32(NULL, NULL, NULL, "test.xpm");
+	res = xpm_decode(NULL, NULL, NULL, "test.xpm");
 	EXPECT_EQ(res, XPM_INV_ARG);
 }
 
@@ -18,26 +18,26 @@ TEST(XPM42, invalidFile) {
 	xpm_error_t res;
 
 	data = NULL;
-	res = xpm_decode32(&data, &width, &height, "");
+	res = xpm_decode(&data, &width, &height, "");
 	EXPECT_EQ(res, XPM_INV_FILE_TYPE);
 
 	data = NULL;
-	res = xpm_decode32(&data, &width, &height, "test.xpm4");
-	EXPECT_EQ(res, XPM_INV_FILE_TYPE);
-	free(data);
-
-	data = NULL;
-	res = xpm_decode32(&data, &width, &height, "test.");
+	res = xpm_decode(&data, &width, &height, "test.xpm4");
 	EXPECT_EQ(res, XPM_INV_FILE_TYPE);
 	free(data);
 
 	data = NULL;
-	res = xpm_decode32(&data, &width, &height, "test");
+	res = xpm_decode(&data, &width, &height, "test.");
 	EXPECT_EQ(res, XPM_INV_FILE_TYPE);
 	free(data);
 
 	data = NULL;
-	res = xpm_decode32(&data, &width, &height, "nonexisting.xpm42");
+	res = xpm_decode(&data, &width, &height, "test");
+	EXPECT_EQ(res, XPM_INV_FILE_TYPE);
+	free(data);
+
+	data = NULL;
+	res = xpm_decode(&data, &width, &height, "nonexisting.xpm42");
 	EXPECT_EQ(res, XPM_OPEN_ERROR);
 	free(data);
 }
@@ -108,7 +108,7 @@ TEST(XPM42_int, parse_header)
 	FILE *fp = fmemopen((void *)parse_header_testfile, strlen(parse_header_testfile), "r");
 	ASSERT_NE(fp, nullptr);
 
-	res = xpm_parse_header(&header, fp);
+	res = xpm_decode_header(&header, fp);
 	ASSERT_EQ(res, XPM_SUCCESS);
 
 	EXPECT_EQ(header.width, 16);
@@ -133,3 +133,5 @@ TEST(XPM42_int, parse_header)
 	free(header.color_names);
 	free(header.color_values);
 }
+
+//TODO: add test for xpm_decode_body

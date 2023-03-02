@@ -17,7 +17,7 @@ typedef enum {
 	XPM_INV_FILE_FORMAT,
 } xpm_error_t;
 
-xpm_error_t xpm_decode32(uint32_t **data, uint32_t *width, uint32_t *height, const char *file);
+xpm_error_t xpm_decode(uint32_t **data, uint32_t *width, uint32_t *height, const char *file);
 
 # ifdef __cplusplus
 }

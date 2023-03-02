@@ -17,7 +17,7 @@ static bool xpm_check_filename_type(const char *filename)
 	return (true);
 }
 
-xpm_error_t xpm_decode32(uint32_t **data, uint32_t *width, uint32_t *height, const char *file)
+xpm_error_t xpm_decode(uint32_t **data, uint32_t *width, uint32_t *height, const char *file)
 {
 	if (!data || !width || !height || !file)
 		return XPM_INV_ARG;
@@ -29,10 +29,12 @@ xpm_error_t xpm_decode32(uint32_t **data, uint32_t *width, uint32_t *height, con
 	if (fp == NULL)
 		return (XPM_OPEN_ERROR);
 	
-	xpm_header_t xpm_header;
+	xpm_header_t header;
 	xpm_error_t error;
-	if ((error = xpm_parse_header(&xpm_header, fp)))
+	if ((error = xpm_decode_header(&header, fp)))
+		return (error);
+	if ((error = xpm_decode_body(data, &header, fp)))
 		return (error);
 
-	return XPM_SUCCESS;
+	return (XPM_SUCCESS);
 }

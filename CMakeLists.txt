@@ -5,6 +5,7 @@ set (SRCS
     src/xpm_decode.c
 	src/xpm_getline.c
 	src/xpm_decode_header.c
+	src/xpm_decode_body.c
 )
 set (LIB_NAME xpm42)
 

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-static xpm_error_t xpm_parse_header_color(char *line, char **name, uint32_t *value, const xpm_header_t *header)
+static xpm_error_t xpm_decode_header_color(char *line, char **name, uint32_t *value, const xpm_header_t *header)
 {
 	char format[10];
 	snprintf(format, sizeof(format), "%%%ds #%%x", header->chars_per_pixel);
@@ -19,7 +19,7 @@ static xpm_error_t xpm_parse_header_color(char *line, char **name, uint32_t *val
 	return (XPM_SUCCESS);
 }
 
-static xpm_error_t xpm_parse_header_colors(xpm_header_t *header, FILE *fp)
+static xpm_error_t xpm_decode_header_colors(xpm_header_t *header, FILE *fp)
 {
 	header->color_names = NULL;
 	header->color_values = NULL;
@@ -36,16 +36,16 @@ static xpm_error_t xpm_parse_header_colors(xpm_header_t *header, FILE *fp)
 	{
 		line_length = xpm_getline(&line, &line_cap, fp);
 		if (line_length < 0)
-			return (free(line), XPM_READ_ERROR);
+			return (free(line), XPM_STREAM_ERROR_CODE(fp));
 		xpm_error_t error;	
-		if ((error = xpm_parse_header_color(line, &header->color_names[i], &header->color_values[i], header)))
+		if ((error = xpm_decode_header_color(line, &header->color_names[i], &header->color_values[i], header)))
 			return (free(line), error);
 	}
 	free(line);
 	return (XPM_SUCCESS);
 }
 
-xpm_error_t xpm_parse_header(xpm_header_t *header, FILE *fp)
+xpm_error_t xpm_decode_header(xpm_header_t *header, FILE *fp)
 {
 	char *line = NULL;
 	size_t line_cap = 0;
@@ -53,14 +53,14 @@ xpm_error_t xpm_parse_header(xpm_header_t *header, FILE *fp)
 
 	line_length = xpm_getline(&line, &line_cap, fp);
 	if (line_length < 0)
-		return (free(line), XPM_READ_ERROR);
+		return (free(line), XPM_STREAM_ERROR_CODE(fp));
 	if (strncmp(line, "!XPM42\n", line_cap))
 		return (free(line), XPM_INV_FILE_FORMAT);
 	char color_mode;
 
 	line_length = xpm_getline(&line, &line_cap, fp);
 	if (line_length < 0)
-		return (free(line), XPM_READ_ERROR);
+		return (free(line), XPM_STREAM_ERROR_CODE(fp));
 	if ((sscanf(line, "%u %u %u %u %c", &header->width, &header->height, &header->color_cnt, &header->chars_per_pixel, &color_mode)) != 5)
 		return (free(line), XPM_INV_FILE_FORMAT);
 	free(line);
@@ -73,5 +73,5 @@ xpm_error_t xpm_parse_header(xpm_header_t *header, FILE *fp)
 	else
 		return (XPM_INV_FILE_FORMAT);
 	
-	return (xpm_parse_header_colors(header, fp));
+	return (xpm_decode_header_colors(header, fp));
 }

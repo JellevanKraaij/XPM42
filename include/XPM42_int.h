@@ -27,8 +27,11 @@ typedef struct {
 
 } xpm_header_t;
 
+#define XPM_STREAM_ERROR_CODE(fp) (feof(fp) ? XPM_INV_FILE_FORMAT : XPM_READ_ERROR)
+
 ssize_t xpm_getline(char **lineptr, size_t *n, FILE *stream);
-xpm_error_t xpm_parse_header(xpm_header_t *header, FILE *fp);
+xpm_error_t xpm_decode_header(xpm_header_t *header, FILE *fp);
+xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *fp);
 
 #ifdef __cplusplus
 }
