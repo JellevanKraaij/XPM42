@@ -127,11 +127,59 @@ TEST(XPM42_int, parse_header)
 	EXPECT_STREQ(header.color_names[2], "c");
 	EXPECT_EQ(header.color_values[2], 0xFF00FF00);
 
-	for (int i = 0; i < header.color_cnt; i++) {
+	for (unsigned int i = 0; i < header.color_cnt; i++) {
 		free(header.color_names[i]);
 	}
 	free(header.color_names);
 	free(header.color_values);
 }
 
-//TODO: add test for xpm_decode_body
+
+TEST(XPM42_int, xpm_decode_body)
+{
+	xpm_header_t	header;
+
+	header.height = 2;
+	header.width = 2;
+	header.chars_per_pixel = 1;
+	header.color_cnt = 3;
+	header.color_names = (char **)malloc(sizeof(char *) * header.color_cnt);
+	header.color_values = (uint32_t *)malloc(sizeof(uint32_t) * header.color_cnt);
+	header.color_names[0] = strdup("a");
+	header.color_values[0] = 0x00000000;
+	header.color_names[1] = strdup("b");
+	header.color_values[1] = 0xFFFFFFFF;
+	header.color_names[2] = strdup("c");
+	header.color_values[2] = 0xFF00FF00;
+
+	const char *body = "aa\n"
+					   "bb\n";
+	
+	FILE *fp = fmemopen((void *)body, strlen(body), "r");
+	ASSERT_NE(fp, nullptr);
+
+	uint32_t *pixels = NULL;
+	xpm_error_t res = xpm_decode_body(&pixels, &header, fp);
+
+	fprintf(stderr, "readc = %d", fgetc(fp));
+	fprintf(stderr, "eof = %d, err = %d\n", feof(fp), ferror(fp));
+
+	ASSERT_EQ(res, XPM_SUCCESS);
+
+	EXPECT_EQ(pixels[0], 0x00000000);
+	EXPECT_EQ(pixels[1], 0x00000000);
+	EXPECT_EQ(pixels[2], 0xFFFFFFFF);
+	EXPECT_EQ(pixels[3], 0xFFFFFFFF);
+
+	free(pixels);
+	free(header.color_names[0]);
+	free(header.color_names[1]);
+	free(header.color_names[2]);
+	free(header.color_names);
+	free(header.color_values);
+
+	EXPECT_FALSE(ferror(fp));
+	EXPECT_TRUE(feof(fp));
+
+	fclose(fp);
+}

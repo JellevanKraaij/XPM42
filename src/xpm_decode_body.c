@@ -20,6 +20,7 @@ static xpm_error_t xpm_lookup_color(const xpm_header_t *header, const char *name
 
 xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *fp)
 {
+
 	if (!header || !data)
 		return (XPM_INV_ARG);
 
@@ -27,17 +28,20 @@ xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *f
 	if (!*data)
 		return (XPM_MEM_ERROR);
 
-	for (uint32_t i = 0; i < header->height; i++)
+	for (uint32_t y = 0; y < header->height; y++)
 	{
-		for (uint32_t j = 0; j < header->width; j++)
+		for (uint32_t x = 0; x < header->width; x++)
 		{
 			char read_buffer[header->chars_per_pixel];
 			if (fread(&read_buffer, header->chars_per_pixel, 1, fp) != header->chars_per_pixel)
-				return (XPM_STREAM_ERROR_CODE(fp));
+				return (free(data), XPM_STREAM_ERROR_CODE(fp));
+			fprintf(stderr, "read %c\n", read_buffer[0]);
 			xpm_error_t error;
-			if ((error = xpm_lookup_color(header, read_buffer, &(*data)[i * header->width + j])))
-				return (error);
+			if ((error = xpm_lookup_color(header, read_buffer, &(*data)[y * header->width + x])))
+				return (free(data), error);
 		}
+		if ((getc(fp) != '\n' && y < header->height - 1) || (y == header->height - 1 && (fgetc(fp) != EOF || ferror(fp))))
+			return (free(*data), XPM_STREAM_ERROR_CODE(fp));
 	}
 	return (XPM_SUCCESS);
 }

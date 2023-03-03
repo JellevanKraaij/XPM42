@@ -34,7 +34,7 @@ ssize_t xpm_getline(char **line, size_t *line_size, FILE *file)
 		strcat(*line, chunk);
 
 		line_length = strlen(*line);
-		if ((*line)[line_length - 1] == '\n')
+		if ((*line)[line_length - 1] == '\n' || ((*line)[line_length - 1] == '\r' && (*line)[line_length - 2] == '\n'))
 			return (line_length);
 	}
 	if (line_length > 0)

@@ -32,9 +32,18 @@ xpm_error_t xpm_decode(uint32_t **data, uint32_t *width, uint32_t *height, const
 	xpm_header_t header;
 	xpm_error_t error;
 	if ((error = xpm_decode_header(&header, fp)))
-		return (error);
-	if ((error = xpm_decode_body(data, &header, fp)))
-		return (error);
+		return (fclose(fp), error);
+
+	uint32_t *decoded_data;
+	if ((error = xpm_decode_body(&decoded_data, &header, fp)))
+		return (fclose(fp), error);
+
+	xpm_header_destroy(&header);
+	fclose(fp);
+
+	*width = header.width;
+	*height = header.height;
+	*data = decoded_data;
 
 	return (XPM_SUCCESS);
 }

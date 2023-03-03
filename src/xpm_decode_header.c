@@ -21,12 +21,10 @@ static xpm_error_t xpm_decode_header_color(char *line, char **name, uint32_t *va
 
 static xpm_error_t xpm_decode_header_colors(xpm_header_t *header, FILE *fp)
 {
-	header->color_names = NULL;
-	header->color_values = NULL;
 	header->color_names = calloc(header->color_cnt, sizeof(char *));
 	header->color_values = calloc(header->color_cnt, sizeof(uint32_t));
 	if (!header->color_names || !header->color_values)
-		return (free(header->color_names), free(header->color_values), XPM_MEM_ERROR);
+		return (XPM_MEM_ERROR);
 
 	char *line = NULL;
 	size_t line_cap = 0;
@@ -51,6 +49,8 @@ xpm_error_t xpm_decode_header(xpm_header_t *header, FILE *fp)
 	size_t line_cap = 0;
 	ssize_t line_length;
 
+	bzero(header, sizeof(xpm_header_t));
+
 	line_length = xpm_getline(&line, &line_cap, fp);
 	if (line_length < 0)
 		return (free(line), XPM_STREAM_ERROR_CODE(fp));
@@ -73,5 +73,22 @@ xpm_error_t xpm_decode_header(xpm_header_t *header, FILE *fp)
 	else
 		return (XPM_INV_FILE_FORMAT);
 	
-	return (xpm_decode_header_colors(header, fp));
+	xpm_error_t error;
+	if ((error = xpm_decode_header_colors(header, fp)))
+		return (xpm_header_destroy(header), error);
+	return (XPM_SUCCESS);
+}
+
+
+void xpm_header_destroy(xpm_header_t *header)
+{
+	if (header->color_names)
+	{
+		for (unsigned int i = 0; i < header->color_cnt; i++)
+			free(header->color_names[i]);
+		free(header->color_names);
+	}
+	free(header->color_values);
+	header->color_names = NULL;
+	header->color_values = NULL;
 }
