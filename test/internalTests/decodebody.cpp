@@ -80,18 +80,21 @@ static const DecodeBodyParams decodeBodyParams[] =
 		.fileContent = (char *)"aa\nb\naa\n",
 		.header = singleChar_header,
 		.isValid = false,
+		.expectedData = nullptr,
 		.name = "singleChar1"
 	},
 	{
 		.fileContent = (char *)"aa\nbb\naa\na",
 		.header = singleChar_header,
 		.isValid = false,
+		.expectedData = nullptr,
 		.name = "singleChar2"
 	},
 	{
 		.fileContent = (char *)"aa\nbb\nda\n",
 		.header = singleChar_header,
 		.isValid = false,
+		.expectedData = nullptr,
 		.name = "singleChar3"
 	},
 
@@ -99,12 +102,14 @@ static const DecodeBodyParams decodeBodyParams[] =
 		.fileContent = (char *)"abcabb\naaabb\naaaabc\n",
 		.header = multiChar_header,
 		.isValid = false,
+		.expectedData = nullptr,
 		.name = "multiChar1"
 	},
 	{
 		.fileContent = (char *)"abcabb\nacaabb\naaaabc",
 		.header = multiChar_header,
 		.isValid = false,
+		.expectedData = nullptr,
 		.name = "multiChar2"
 	}
 };

@@ -7,11 +7,11 @@
 #include <XPM42.h>
 
 struct DecodeBodyParams {
-	const char 		*name;
 	char			*fileContent;
+	xpm_header_t	header;
 	bool 			isValid;
 	uint32_t 		*expectedData;
-	xpm_header_t	header;
+	const char 		*name;
 };
 
 void PrintTo(const DecodeBodyParams &params, std::ostream *os) {
