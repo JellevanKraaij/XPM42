@@ -32,13 +32,13 @@ xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *f
 	{
 		for (uint32_t x = 0; x < header->width; x++)
 		{
-			char read_buffer[header->chars_per_pixel];
-			if (fread(&read_buffer, header->chars_per_pixel, 1, fp) != header->chars_per_pixel)
-				return (free(data), XPM_STREAM_ERROR_CODE(fp));
-			fprintf(stderr, "read %c\n", read_buffer[0]);
+			char read_buffer[header->chars_per_pixel + 1];
+			read_buffer[header->chars_per_pixel] = '\0';
+			if (fread(&read_buffer, header->chars_per_pixel, 1, fp) != 1)
+				return (free(*data), XPM_STREAM_ERROR_CODE(fp));
 			xpm_error_t error;
 			if ((error = xpm_lookup_color(header, read_buffer, &(*data)[y * header->width + x])))
-				return (free(data), error);
+				return (free(*data), error);
 		}
 		if ((getc(fp) != '\n' && y < header->height - 1) || (y == header->height - 1 && (fgetc(fp) != EOF || ferror(fp))))
 			return (free(*data), XPM_STREAM_ERROR_CODE(fp));

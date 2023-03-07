@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-
 static bool xpm_check_filename_type(const char *filename)
 {
 	char *dot_location = strrchr(filename, '.');

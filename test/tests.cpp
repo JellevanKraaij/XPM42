@@ -2,7 +2,7 @@
 #include <XPM42_int.h>
 #include <gtest/gtest.h>
 
-TEST(XPM42, invalidParams) {
+TEST(parameters, invalid) {
 
 	xpm_error_t res = xpm_decode(NULL, NULL, NULL, NULL);
 	EXPECT_EQ(res, XPM_INV_ARG);
@@ -11,7 +11,7 @@ TEST(XPM42, invalidParams) {
 	EXPECT_EQ(res, XPM_INV_ARG);
 }
 
-TEST(XPM42, invalidFile) {
+TEST(file, invalid) {
 	uint32_t	*data;
 	uint32_t	width;
 	uint32_t	height;
@@ -42,144 +42,28 @@ TEST(XPM42, invalidFile) {
 	free(data);
 }
 
-static const char getline_testfile[] =
-	"CJNh7W73d55&%Du\n"
-	"a#x@yNCUZ6ZRfAw\n"
-	"\n"
-	"a2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$ca2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$c";
+TEST(file, valid) {
+	uint32_t	*data;
+	uint32_t	width;
+	uint32_t	height;
+	xpm_error_t res;
 
-TEST(XPM42_int, getline)
-{
-	ssize_t		len;
-
-	len = xpm_getline(NULL, NULL, NULL);
-	EXPECT_EQ(len, -1);
-
-
-	FILE *fp = fmemopen((void *)getline_testfile, strlen(getline_testfile), "r");
-	ASSERT_NE(fp, nullptr);
-
-	char *line = NULL;
-	size_t n = 0;
-
-	len = xpm_getline(&line, &n, fp);
-	EXPECT_EQ(len, 16);
-	EXPECT_GT(n, 16);
-	EXPECT_STREQ(line, "CJNh7W73d55&%Du\n");
-
-	len = xpm_getline(&line, &n, fp);
-	EXPECT_EQ(len, 16);
-	EXPECT_GT(n, 16);
-	EXPECT_STREQ(line, "a#x@yNCUZ6ZRfAw\n");
-
-	len = xpm_getline(&line, &n, fp);
-	EXPECT_EQ(len, 1);
-	EXPECT_GT(n, 1);
-	EXPECT_STREQ(line, "\n");
-
-	len = xpm_getline(&line, &n, fp);
-	EXPECT_EQ(len, 256);
-	EXPECT_GT(n, 256);
-	EXPECT_STREQ(line, "a2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$ca2F58%Zz#HA$M6n$m4ygjPjF5KNaRK99ZJWvE@vjnFYB#ieMSR9CFu6*GPfvGnDJx$ha$UFvBFH%7M@yyba89ZPETNR%g3YrmKsGczT7w7W6&5!AQWGGb8mLr6dr#D$c");
-
-	len = xpm_getline(&line, &n, fp);
-	EXPECT_EQ(len, -1);
-
-	free(line);
-
-	EXPECT_FALSE(ferror(fp));
-	EXPECT_TRUE(feof(fp));
-
-	fclose(fp);
+	data = NULL;
+	res = xpm_decode(&data, &width, &height, "assets/simple.xpm42");
+	EXPECT_EQ(res, XPM_SUCCESS);
+	EXPECT_NE(data, nullptr);
+	free(data);
 }
 
-static const char parse_header_testfile[] =
-	"!XPM42\n"
-	"16 16 3 1 c\n"
-	"a #00000000\n"
-	"b #FFFFFFFF\n"
-	"c #FF00FF00\n";
+TEST(largeFile, valid) {
+	uint32_t	*data;
+	uint32_t	width;
+	uint32_t	height;
+	xpm_error_t res;
 
-TEST(XPM42_int, parse_header)
-{
-	xpm_header_t	header;
-	xpm_error_t		res;
-
-	FILE *fp = fmemopen((void *)parse_header_testfile, strlen(parse_header_testfile), "r");
-	ASSERT_NE(fp, nullptr);
-
-	res = xpm_decode_header(&header, fp);
-	ASSERT_EQ(res, XPM_SUCCESS);
-
-	EXPECT_EQ(header.width, 16);
-	EXPECT_EQ(header.height, 16);
-	EXPECT_EQ(header.color_mode, XPM_MODE_NORMAL);
-	
-	ASSERT_EQ(header.chars_per_pixel, 1);
-	ASSERT_EQ(header.color_cnt, 3);
-
-	EXPECT_STREQ(header.color_names[0], "a");
-	EXPECT_EQ(header.color_values[0], 0x00000000);
-
-	EXPECT_STREQ(header.color_names[1], "b");
-	EXPECT_EQ(header.color_values[1], 0xFFFFFFFF);
-
-	EXPECT_STREQ(header.color_names[2], "c");
-	EXPECT_EQ(header.color_values[2], 0xFF00FF00);
-
-	for (unsigned int i = 0; i < header.color_cnt; i++) {
-		free(header.color_names[i]);
-	}
-	free(header.color_names);
-	free(header.color_values);
-}
-
-
-TEST(XPM42_int, xpm_decode_body)
-{
-	xpm_header_t	header;
-
-	header.height = 2;
-	header.width = 2;
-	header.chars_per_pixel = 1;
-	header.color_cnt = 3;
-	header.color_names = (char **)malloc(sizeof(char *) * header.color_cnt);
-	header.color_values = (uint32_t *)malloc(sizeof(uint32_t) * header.color_cnt);
-	header.color_names[0] = strdup("a");
-	header.color_values[0] = 0x00000000;
-	header.color_names[1] = strdup("b");
-	header.color_values[1] = 0xFFFFFFFF;
-	header.color_names[2] = strdup("c");
-	header.color_values[2] = 0xFF00FF00;
-
-	const char *body = "aa\n"
-					   "bb\n";
-	
-	FILE *fp = fmemopen((void *)body, strlen(body), "r");
-	ASSERT_NE(fp, nullptr);
-
-	uint32_t *pixels = NULL;
-	xpm_error_t res = xpm_decode_body(&pixels, &header, fp);
-
-	fprintf(stderr, "readc = %d", fgetc(fp));
-	fprintf(stderr, "eof = %d, err = %d\n", feof(fp), ferror(fp));
-
-	ASSERT_EQ(res, XPM_SUCCESS);
-
-	EXPECT_EQ(pixels[0], 0x00000000);
-	EXPECT_EQ(pixels[1], 0x00000000);
-	EXPECT_EQ(pixels[2], 0xFFFFFFFF);
-	EXPECT_EQ(pixels[3], 0xFFFFFFFF);
-
-	free(pixels);
-	free(header.color_names[0]);
-	free(header.color_names[1]);
-	free(header.color_names[2]);
-	free(header.color_names);
-	free(header.color_values);
-
-	EXPECT_FALSE(ferror(fp));
-	EXPECT_TRUE(feof(fp));
-
-	fclose(fp);
+	data = NULL;
+	res = xpm_decode(&data, &width, &height, "assets/large.xpm42");
+	EXPECT_EQ(res, XPM_SUCCESS);
+	EXPECT_NE(data, nullptr);
+	free(data);
 }

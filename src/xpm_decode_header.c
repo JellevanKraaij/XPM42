@@ -8,10 +8,14 @@
 
 static xpm_error_t xpm_decode_header_color(char *line, char **name, uint32_t *value, const xpm_header_t *header)
 {
-	char format[10];
-	snprintf(format, sizeof(format), "%%%ds #%%x", header->chars_per_pixel);
 	char namebuf[header->chars_per_pixel + 1];
-	if (sscanf(line, format, namebuf, value) != 2)
+	namebuf[header->chars_per_pixel] = '\0';
+
+	if (strlen(line) < header->chars_per_pixel)
+		return (XPM_INV_FILE_FORMAT);
+	strncpy(namebuf, line, header->chars_per_pixel);
+
+	if (sscanf(line + header->chars_per_pixel, "%*1[ ]#%x", value) != 1)
 		return (XPM_INV_FILE_FORMAT);
 	*name = strdup(namebuf);
 	if (!*name)
@@ -72,7 +76,6 @@ xpm_error_t xpm_decode_header(xpm_header_t *header, FILE *fp)
 		header->color_mode = XPM_MODE_MONOCHROME;
 	else
 		return (XPM_INV_FILE_FORMAT);
-	
 	xpm_error_t error;
 	if ((error = xpm_decode_header_colors(header, fp)))
 		return (xpm_header_destroy(header), error);
