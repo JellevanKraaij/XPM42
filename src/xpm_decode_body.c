@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static xpm_error_t xpm_lookup_color(const xpm_header_t *header, const char *name, uint32_t *value)
+static xpm_error_t xpm_lookup_color(const xpm_header_t *header, const char *str, uint32_t *value)
 {
 	for (uint32_t i = 0; i < header->color_cnt; i++)
 	{
-		if (!strncmp(name, header->color_names[i], header->chars_per_pixel))
+		if (!strncmp(str, header->color_names[i], header->chars_per_pixel))
 		{
 			*value = header->color_values[i];
 			return (XPM_SUCCESS);
@@ -20,6 +20,10 @@ static xpm_error_t xpm_lookup_color(const xpm_header_t *header, const char *name
 
 xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *fp)
 {
+	char *line = NULL;
+	size_t line_size = 0;
+	ssize_t len = 0;
+
 
 	if (!header || !data)
 		return (XPM_INV_ARG);
@@ -30,18 +34,27 @@ xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *f
 
 	for (uint32_t y = 0; y < header->height; y++)
 	{
+		len = xpm_getline(&line, &line_size, fp);
+		if (len < 0)
+			return (free(line), XPM_STREAM_ERROR_CODE(fp));
+		if (line[len - 1] == '\n')
+			len--;
+		if (line[len - 1] == '\r')
+			len--;
+		if (len != header->width * header->chars_per_pixel)
+			return (free(line), XPM_INV_FILE_FORMAT);
 		for (uint32_t x = 0; x < header->width; x++)
 		{
-			char read_buffer[header->chars_per_pixel + 1];
-			read_buffer[header->chars_per_pixel] = '\0';
-			if (fread(&read_buffer, header->chars_per_pixel, 1, fp) != 1)
-				return (free(*data), XPM_STREAM_ERROR_CODE(fp));
-			xpm_error_t error;
-			if ((error = xpm_lookup_color(header, read_buffer, &(*data)[y * header->width + x])))
-				return (free(*data), error);
+			char *str = line + x * header->chars_per_pixel;
+			uint32_t value = 0;
+			xpm_error_t err = xpm_lookup_color(header, str, &value);
+			if (err != XPM_SUCCESS)
+				return (free(line), err);
+			(*data)[y * header->width + x] = value;
 		}
-		if ((getc(fp) != '\n' && y < header->height - 1) || (y == header->height - 1 && (fgetc(fp) != EOF || ferror(fp))))
-			return (free(*data), XPM_STREAM_ERROR_CODE(fp));
 	}
+	free(line);
+	if (fgetc(fp) != EOF)
+		return (XPM_STREAM_ERROR_CODE(fp));
 	return (XPM_SUCCESS);
 }

@@ -61,11 +61,11 @@ static const DecodeBodyParams decodeBodyParams[] =
 		.name = "singleChar1NoNewline"
 	},
 	{
-		.fileContent = (char *)"ab\ncb\nca",
+		.fileContent = (char *)"ab\ncb\nca\n",
 		.header = singleChar_header,
 		.isValid = true,
 		.expectedData = (uint32_t[]){0x00000000, 0xFFFFFFFF, 0xFF00FF00, 0xFFFFFFFF, 0xFF00FF00, 0x00000000},
-		.name = "singleChar1"
+		.name = "singleChar2"
 	},
 	{
 		.fileContent = (char *)"abcabb\naaaabb\naaaabc",
