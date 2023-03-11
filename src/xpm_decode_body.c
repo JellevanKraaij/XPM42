@@ -36,25 +36,25 @@ xpm_error_t xpm_decode_body(uint32_t **data, const xpm_header_t *header, FILE *f
 	{
 		len = xpm_getline(&line, &line_size, fp);
 		if (len < 0)
-			return (free(line), XPM_STREAM_ERROR_CODE(fp));
+			return (free(line), free(*data), XPM_STREAM_ERROR_CODE(fp));
 		if (line[len - 1] == '\n')
 			len--;
 		if (line[len - 1] == '\r')
 			len--;
 		if (len != header->width * header->chars_per_pixel)
-			return (free(line), XPM_INV_FILE_FORMAT);
+			return (free(line), free(*data), XPM_INV_FILE_FORMAT);
 		for (uint32_t x = 0; x < header->width; x++)
 		{
 			char *str = line + x * header->chars_per_pixel;
 			uint32_t value = 0;
 			xpm_error_t err = xpm_lookup_color(header, str, &value);
 			if (err != XPM_SUCCESS)
-				return (free(line), err);
+				return (free(line), free(*data), err);
 			(*data)[y * header->width + x] = value;
 		}
 	}
 	free(line);
 	if (fgetc(fp) != EOF)
-		return (XPM_STREAM_ERROR_CODE(fp));
+		return (free(*data), XPM_STREAM_ERROR_CODE(fp));
 	return (XPM_SUCCESS);
 }
